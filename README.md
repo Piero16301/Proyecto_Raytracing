@@ -1,2 +1,2 @@
-# Proyecto_Raytracing
+# Proyecto Raytracing
 Proyecto 1 de Computación Gráfica
