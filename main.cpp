@@ -1,28 +1,29 @@
 #include <iostream>
 #include <vector>
 #include <chrono>
+#include <pthread.h>
 
 #include "Utils.h"
 #include "Camera.h"
 #include "Sphere.h"
 #include "Plane.h"
 #include "Cylinder.h"
-#include "CImg.h"
 
 using namespace std;
 
-int main() {
-    cout << "Renderizando imagen..." << endl;
+int FPS = 30;
+int duration = 2;
+int num_threads = 4;
 
-    auto t1 = chrono::high_resolution_clock::now();
+int step = 0;
 
-    system("del /f images_output\\*.bmp");
-    system("del /f video_output\\video.mp4");
+void* render_frame(void* arg) {
 
-    int FPS = 1;
-    int duration = 1;
+    int temp = step++;
 
-    for (int frame_number = 0; frame_number < (FPS * duration); frame_number++) {
+    cout << "Thread " << temp << " renderizando desde el frame " <<  temp * (FPS * duration) / num_threads << " hasta el frame " << (temp + 1) * (FPS * duration) / num_threads << endl;
+
+    for (int i = temp * (FPS * duration) / num_threads; i < (temp + 1) * (FPS * duration) / num_threads; i++) {
         int dpi = 144;
         int width = 1280;
         int height = 720;
@@ -45,13 +46,13 @@ int main() {
         Vector3D cylinder_location(0, 0, -2);
 
         // Posicion de la camara (plano-luz, alto, plano-sombra)
-        Vector3D campos(5, 3, (-9 + ((double)(18 / (double)(FPS * duration)) * frame_number)));
+        Vector3D campos(5, 3, (-9 + ((double)(18 / (double)(FPS * duration)) * i)));
 
         // Direccion de la camara
         Vector3D look_at(0,0,0);
         Vector3D diff_btw(campos.getVectX() - look_at.getVectX(),
-                        campos.getVectY() - look_at.getVectY(),
-                        campos.getVectZ() - look_at.getVectZ());
+                          campos.getVectY() - look_at.getVectY(),
+                          campos.getVectZ() - look_at.getVectZ());
 
         Vector3D camdir = diff_btw.negative().normalize();
         Vector3D camright = Y.crossProduct(camdir).normalize();
@@ -214,41 +215,40 @@ int main() {
             }
         }
 
-        /*cimg_library::CImg<double> image(width, height, 1, 3, 255);
-
-        int y_counter = height-1;
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                int thisone = y * width + x;
-                image(x, y_counter, 0, 0) = pixels[thisone].r;
-                image(x, y_counter, 0, 1) = pixels[thisone].g;
-                image(x, y_counter, 0, 2) = pixels[thisone].b;
-                y_counter--;
-            }
-            y_counter = height-1;
-        }
-
-        image.display();*/
-
-        // Se borra la imagen anterior y se crea la nueva
-        // system("del /f ..\\scene.bmp");
-        // saveBMP("../scene.bmp",width,height,dpi,pixels);
-        // system("rm images_output/scene.bmp");
-        string frame_route = "images_output\\scene_frame_" + to_string(frame_number + 1) + ".bmp";
+        string frame_route = "../images_output/scene_frame_" + to_string(i + 1) + ".bmp";
         saveBMP(frame_route.c_str(), width, height, dpi, pixels);
 
         delete [] pixels;
 
-        cout << "Frame " << frame_number + 1 << " creado" << endl;
+        cout << "Frame " << i + 1 << " creado" << endl;
     }
 
-    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i images_output/scene_frame_%d.bmp video_output/video.mp4";
+    return (void*) 1;
+}
+
+int main() {
+    cout << "Renderizando imagen..." << endl;
+
+    auto t1 = chrono::high_resolution_clock::now();
+
+    system("rm ../images_output/*.bmp");
+    system("rm ../video_output/video.mp4");
+
+    pthread_t threads[num_threads];
+
+    for (int i = 0; i < num_threads; i++) {
+        int *p = nullptr;
+        pthread_create(&threads[i], nullptr, render_frame, (void*)(p));
+    }
+
+    for (int i = 0; i < num_threads; i++) {
+        pthread_join(threads[i], nullptr);
+    }
+
+    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i ../images_output/scene_frame_%d.bmp ../video_output/video.mp4";
     system(ffmpeg.c_str());
 
     auto t2 = chrono::high_resolution_clock::now();
-
-    /*cimg_library::CImg<unsigned char> img("../images_output/scene_frame_1.bmp");
-    img.display();*/
 
     chrono::duration<double> execution_time = t2 - t1;
 
