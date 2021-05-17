@@ -7,15 +7,17 @@ public:
     double green;
     double blue;
     double special; // Nivel de reflexion especular [0-1]
+    double refraction;
 
 public:
     Color();
-    Color(double r, double g, double b, double s);
+    Color(double r, double g, double b, double s, double rf);
 
     double getColorRed() const;
     double getColorGreen() const;
     double getColorBlue() const;
     double getColorSpecial() const;
+    double getColorRefraction() const;
 
     void setColorRed(double redValue);
     void setColorGreen(double greenValue);

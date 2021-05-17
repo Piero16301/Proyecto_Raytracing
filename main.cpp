@@ -48,7 +48,7 @@ void* render_frame(void* arg) {
         Vector3D cylinder_location(0, 0, 0);
 
         // Posicion de la camara (plano-luz, alto, plano-sombra)
-        Vector3D campos(0, 5, -5);
+        Vector3D campos(0, 3, -5);
 
         // Direccion de la camara
         Vector3D look_at(0,0,0);
@@ -64,12 +64,12 @@ void* render_frame(void* arg) {
         Camera scene_cam(campos, camdir, camright, camdown);
 
         // Colores pre-definidos
-        Color white(1,1,1,0);
-        Color red_shiny(1,0,0,0.3);
-        Color green_shiny(0,1,0,0.3);
-        Color blue_shiny(0,0,1,0.3);
-        Color tile_floor(1, 1, 1, 2);
-        Color yellow_light(1, 1, 0.4, 0);
+        Color white(1,1,1,0,0);
+        Color red_shiny(1,0,0,0.1,0.5);
+        Color green_shiny(0,1,0,0.3,0);
+        Color blue_shiny(0,0,1,0.3,0);
+        Color tile_floor(1,1,1,2,0);
+        Color yellow_light(1,1,0.4,0,0);
         // Color maroon(0.5, 0.25, 0.25, 0);
         // Color gray(0.5,0.5,0.5,0);
         // Color black(0.0,0.0,0.0,0);

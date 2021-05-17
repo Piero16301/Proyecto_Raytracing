@@ -6,7 +6,7 @@ Cylinder::Cylinder() {
     center = Vector3D(0,0,0);
     radius = 1.0;
     height = 1.0;
-    color = Color(0.5,0.5,0.5,0);
+    color = Color(0.5,0.5,0.5,0,0);
 }
 
 Cylinder::Cylinder(Vector3D centerValue, double radiusValue, double heightValue, Color colorValue) {

@@ -5,13 +5,15 @@ Color::Color() {
     green = 0.5;
     blue = 0.5;
     special = 0;
+    refraction = 0;
 }
 
-Color::Color(double r, double g, double b, double s) {
+Color::Color(double r, double g, double b, double s, double rf) {
     red = r;
     green = g;
     blue = b;
     special = s;
+    refraction = rf;
 }
 
 double Color::getColorRed() const {
@@ -28,6 +30,10 @@ double Color::getColorBlue() const {
 
 double Color::getColorSpecial() const {
     return special;
+}
+
+double Color::getColorRefraction() const {
+    return refraction;
 }
 
 void Color::setColorRed(double redValue) {
@@ -51,19 +57,19 @@ double Color::brightness() const {
 }
 
 Color Color::colorScalar(double scalar) const {
-    return Color(red*scalar, green*scalar, blue*scalar, special);
+    return Color(red*scalar, green*scalar, blue*scalar, special, refraction);
 }
 
 Color Color::colorAdd(Color color) const {
-    return Color(red + color.getColorRed(), green + color.getColorGreen(), blue + color.getColorBlue(), special);
+    return Color(red + color.getColorRed(), green + color.getColorGreen(), blue + color.getColorBlue(), special, refraction);
 }
 
 Color Color::colorMultiply(Color color) const {
-    return Color(red * color.getColorRed(), green * color.getColorGreen(), blue * color.getColorBlue(), special);
+    return Color(red * color.getColorRed(), green * color.getColorGreen(), blue * color.getColorBlue(), special, refraction);
 }
 
 Color Color::colorAverage(Color color) const {
-    return Color((red + color.getColorRed())/2, (green + color.getColorGreen())/2, (blue + color.getColorBlue())/2, special);
+    return Color((red + color.getColorRed())/2, (green + color.getColorGreen())/2, (blue + color.getColorBlue())/2, special, refraction);
 }
 
 Color Color::clip() {
@@ -82,5 +88,5 @@ Color Color::clip() {
     if (green < 0) {green = 0;}
     if (blue < 0) {blue = 0;}
 
-    return Color(red, green, blue, special);
+    return Color(red, green, blue, special, refraction);
 }

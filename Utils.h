@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 
 #include "RGBType.h"
 #include "Color.h"
@@ -140,6 +141,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         }
     }
 
+    // Si el objeto es tipo luz, se retorna el color del objeto para que no produzca sombra
     if (scene_objects.at(index_of_winning_object)->getType() == 1) {
         return winning_object_color;
     }
@@ -147,6 +149,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
     // Color final multiplicado por la luz ambiente
     Color final_color = winning_object_color.colorScalar(ambientLight);
 
+    // Logica para producir los reflejos
     if (winning_object_color.getColorSpecial() > 0 && winning_object_color.getColorSpecial() <= 1) {
         // Reflexion de objetos que tienen reflexion especular
         double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
@@ -187,7 +190,42 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         }
     }
 
-    // Se recorren todos las fuentes de luz
+    // Logica para producir la refraccion
+    if (winning_object_color.getColorRefraction() > 0 && winning_object_color.getColorRefraction() <= 1) {
+        double refractionIndex = 1.5;
+        double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
+        double k = 1 - refractionIndex * refractionIndex * (1 - dot1 * dot1);
+        if (k >= 0) {
+            Vector3D scalar1 = winning_object_normal.vectMult(refractionIndex * dot1 + sqrt(k));
+            Vector3D scalar2 = intersecting_ray_direction.vectMult(refractionIndex);
+            Vector3D out = scalar2.negative().vectAdd(scalar1);
+            Vector3D refraction_direction = out.normalize();
+
+            Ray refraction_ray(intersection_position, refraction_direction);
+
+            vector <double> refraction_intersections;
+            refraction_intersections.reserve(scene_objects.size());
+
+            for (auto scene_object : scene_objects) {
+                refraction_intersections.push_back(scene_object->findIntersection(refraction_ray));
+            }
+
+            int index_of_winning_object_with_refraction = winningObjectIndex(refraction_intersections);
+
+            if (index_of_winning_object_with_refraction != -1) {
+                if (refraction_intersections.at(index_of_winning_object_with_refraction) > accuracy) {
+                    Vector3D refraction_intersection_position = intersection_position.vectAdd(refraction_direction.vectMult(refraction_intersections.at(index_of_winning_object_with_refraction)));
+                    Vector3D refraction_intersection_ray_direction = refraction_direction;
+
+                    Color refraction_intersection_color = getColorAt(refraction_intersection_position, refraction_intersection_ray_direction, scene_objects, index_of_winning_object_with_refraction, light_sources, accuracy, ambientLight);
+
+                    final_color = final_color.colorAdd(refraction_intersection_color.colorScalar(winning_object_color.getColorRefraction()));
+                }
+            }
+        }
+    }
+
+    // Logica para producir las sombras
     for (auto light_source : light_sources) {
         Vector3D light_direction = light_source->getLightPosition().vectAdd(intersection_position.negative()).normalize();
 

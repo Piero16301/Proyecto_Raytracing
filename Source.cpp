@@ -5,5 +5,5 @@ Vector3D Source::getLightPosition() {
 }
 
 Color Source::getLightColor() {
-    return Color(1,1,1,0);
+    return Color(1,1,1,0,0);
 }
