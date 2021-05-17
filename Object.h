@@ -12,6 +12,7 @@ public:
     virtual Color getColor();
     virtual Vector3D getNormalAt(Vector3D point);
     virtual double findIntersection(Ray ray);
+    virtual int getType();
 };
 
 #endif //ADVANCED_RAYTRACER_OBJECT_H

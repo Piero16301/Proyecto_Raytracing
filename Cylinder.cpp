@@ -58,6 +58,9 @@ double Cylinder::findIntersection(Ray ray) {
     double r = ray.origin.getVectY() + tValue * ray.direction.getVectY();
     
     if ((r >= center.getVectY()) && (r <= center.getVectY() + height)) {
+        if (tValue < 0) {
+            return -1;
+        }
         return tValue;
     } else {
         tValue = (tValue == t1) ? t2 : t1;
@@ -66,8 +69,15 @@ double Cylinder::findIntersection(Ray ray) {
     r = ray.origin.getVectY() + tValue * ray.direction.getVectY();
     
     if ((r >= center.getVectY()) && (r <= center.getVectY() + height)) {
+        if (tValue < 0) {
+            return -1;
+        }
         return tValue;
     } else {
         return -1;
     }
+}
+
+int Cylinder::getType() {
+    return type;
 }

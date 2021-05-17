@@ -140,6 +140,10 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         }
     }
 
+    if (scene_objects.at(index_of_winning_object)->getType() == 1) {
+        return winning_object_color;
+    }
+
     // Color final multiplicado por la luz ambiente
     Color final_color = winning_object_color.colorScalar(ambientLight);
 
@@ -204,16 +208,21 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
             vector <double> secondary_intersections;
             secondary_intersections.reserve(scene_objects.size());
 
+            vector <int> objects_types;
+            objects_types.reserve(scene_objects.size());
+
             // Se calculan las intersecciones del rayo secundario
             for (auto scene_object : scene_objects) {
                 secondary_intersections.push_back(scene_object->findIntersection(shadow_ray));
+                objects_types.push_back(scene_object->getType());
             }
 
             // Se recorren las intersecciones secundarias
-            for (double secondary_intersection : secondary_intersections) {
-                if (secondary_intersection > accuracy) {
+            for (int i = 0; i < secondary_intersections.size(); i++) {
+                if (secondary_intersections[i] > accuracy) {
                     // Si la interseccion es menor o igual a la distancia a la luz, entonces esta en sombra
-                    if (secondary_intersection <= distance_to_light_magnitude) {
+                    distance_to_light_magnitude = (objects_types[i] == 2) ? distance_to_light_magnitude * 3 : distance_to_light_magnitude;
+                    if (secondary_intersections[i] <= distance_to_light_magnitude * 1) {
                         shadowed = true;
                     }
                 }

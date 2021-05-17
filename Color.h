@@ -6,7 +6,7 @@ public:
     double red;
     double green;
     double blue;
-    double special; // Nivel de reflexion expecular [0-1]
+    double special; // Nivel de reflexion especular [0-1]
 
 public:
     Color();

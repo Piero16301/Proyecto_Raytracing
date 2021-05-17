@@ -41,3 +41,7 @@ double Plane::findIntersection(Ray ray) {
         return -1 * b / a;
     }
 }
+
+int Plane::getType() {
+    return type;
+}

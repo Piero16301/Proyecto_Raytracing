@@ -12,4 +12,6 @@ double Object::findIntersection(Ray ray) {
     return 0;
 }
 
-
+int Object::getType() {
+    return 0;
+}

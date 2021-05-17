@@ -11,6 +11,7 @@ public:
     double radius;
     double height;
     Color color;
+    int type = 2;
 
 public:
     Cylinder();
@@ -23,6 +24,7 @@ public:
 
     Vector3D getNormalAt(Vector3D point) override;
     double findIntersection(Ray ray) override;
+    int getType() override;
 };
 
 #endif //ADVANCED_RAYTRACER_CYLINDER_H

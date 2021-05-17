@@ -71,3 +71,7 @@ double Sphere::findIntersection(Ray ray) {
         return -1;
     }
 }
+
+int Sphere::getType() {
+    return type;
+}

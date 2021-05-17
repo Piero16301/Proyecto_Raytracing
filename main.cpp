@@ -8,12 +8,13 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Cylinder.h"
+#include "CImg.h"
 
 using namespace std;
 
-int FPS = 30;
-int duration = 2;
-int num_threads = 4;
+int FPS = 1;
+int duration = 1;
+int num_threads = 1;
 
 int step = 0;
 
@@ -34,19 +35,20 @@ void* render_frame(void* arg) {
         double aathreshold = 0.1;
         double aspectRatio = (double)width / (double)height;
         double ambientLight = 0.2;
-        double accuracy = 0.000001;
+        double accuracy = 0.01;
 
         // Vectores iniciales
         Vector3D O(0, 0, 0);
         // Vector3D X(1, 0, 0);
         Vector3D Y(0, 1, 0);
         // Vector3D Z(0, 0, 1);
-        Vector3D sphere2_location(4, 0, 0);
-        Vector3D sphere3_location(0, 0, 4);
-        Vector3D cylinder_location(0, 0, -2);
+        Vector3D sphere1_location(0, 1, 0);
+        Vector3D sphere2_location(-1, 0, 1);
+        Vector3D sphere3_location(1, 2, -1);
+        Vector3D cylinder_location(0, 0, 0);
 
         // Posicion de la camara (plano-luz, alto, plano-sombra)
-        Vector3D campos(5, 3, (-9 + ((double)(18 / (double)(FPS * duration)) * i)));
+        Vector3D campos(0, 5, -5);
 
         // Direccion de la camara
         Vector3D look_at(0,0,0);
@@ -67,25 +69,35 @@ void* render_frame(void* arg) {
         Color green_shiny(0,1,0,0.3);
         Color blue_shiny(0,0,1,0.3);
         Color tile_floor(1, 1, 1, 2);
+        Color yellow_light(1, 1, 0.4, 0);
         // Color maroon(0.5, 0.25, 0.25, 0);
         // Color gray(0.5,0.5,0.5,0);
         // Color black(0.0,0.0,0.0,0);
 
         // Luces de la escena (solo 1)
         Vector3D light_position(-7,10,-10);
-        Light scene_light(light_position, white);
+        Light scene_light1(light_position, white);
+
+        Light scene_light2(sphere1_location, yellow_light);
+        Light scene_light3(sphere2_location, yellow_light);
+        Light scene_light4(sphere3_location, yellow_light);
+
         vector <Source*> light_sources;
-        light_sources.push_back(dynamic_cast<Source*>(&scene_light));
+        // light_sources.push_back(dynamic_cast<Source*>(&scene_light1));
+
+        light_sources.push_back(dynamic_cast<Source*>(&scene_light2));
+        light_sources.push_back(dynamic_cast<Source*>(&scene_light3));
+        light_sources.push_back(dynamic_cast<Source*>(&scene_light4));
 
         // Objetos de la escena
-        // Sphere scene_sphere1(O, 1, red_shiny);
-        Sphere scene_sphere2(sphere2_location, 1, green_shiny);
-        Sphere scene_sphere3(sphere3_location, 1, blue_shiny);
+        Sphere scene_sphere1(sphere1_location, 0.2, yellow_light);
+        Sphere scene_sphere2(sphere2_location, 0.2, yellow_light);
+        Sphere scene_sphere3(sphere3_location, 0.2, yellow_light);
         Plane scene_plane(Y, -1, tile_floor);
-        Cylinder scene_cylinder(cylinder_location, 1, 1, red_shiny);
+        Cylinder scene_cylinder(cylinder_location, 2, 2, red_shiny);
 
         vector <Object*> scene_objects;
-        // scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere1));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere1));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere2));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere3));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_plane));
@@ -180,6 +192,12 @@ void* render_frame(void* arg) {
                                 Vector3D intersecting_ray_direction = cam_ray_direction;
 
                                 Color intersection_color = getColorAt(intersection_position, intersecting_ray_direction, scene_objects, index_of_winning_object, light_sources, accuracy, ambientLight);
+                                /*Color intersection_color;
+                                if (scene_objects[index_of_winning_object]->getType() == 1) {
+                                    intersection_color = scene_objects[index_of_winning_object]->getColor();
+                                } else {
+                                    intersection_color = getColorAt(intersection_position, intersecting_ray_direction, scene_objects, index_of_winning_object, light_sources, accuracy, ambientLight);
+                                }*/
 
                                 // Se asigna los valores RGB del pixel a la imagen final
                                 tempRed[aa_index] = intersection_color.getColorRed();
@@ -244,6 +262,10 @@ int main() {
     for (int i = 0; i < num_threads; i++) {
         pthread_join(threads[i], nullptr);
     }
+
+    // cimg_library::CImg <unsigned char> image;
+    // image.load("../images_output/scene_frame_1.bmp");
+    // image.display();
 
     string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i ../images_output/scene_frame_%d.bmp ../video_output/video.mp4";
     system(ffmpeg.c_str());
