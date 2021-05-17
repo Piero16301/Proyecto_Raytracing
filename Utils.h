@@ -129,15 +129,21 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         // Patron de plano a cuadros
         int square = (int) floor(intersection_position.getVectX()) + (int) floor(intersection_position.getVectZ());
         if ((square % 2) == 0) {
+            // Cuadro blanco
+            /*winning_object_color.setColorRed(winning_object_color.colorScalar(0.8).getColorRed());
+            winning_object_color.setColorGreen(winning_object_color.colorScalar(0.8).getColorGreen());
+            winning_object_color.setColorBlue(winning_object_color.colorScalar(0.8).getColorBlue());*/
+            winning_object_color.setColorRed(winning_object_color.getColorRed());
+            winning_object_color.setColorGreen(winning_object_color.getColorGreen());
+            winning_object_color.setColorBlue(winning_object_color.getColorBlue());
+        } else {
             // Cuadro negro
+            /*winning_object_color.setColorRed(winning_object_color.colorScalar(1.2).getColorRed());
+            winning_object_color.setColorGreen(winning_object_color.colorScalar(1.2).getColorGreen());
+            winning_object_color.setColorBlue(winning_object_color.colorScalar(1.2).getColorBlue());*/
             winning_object_color.setColorRed(0);
             winning_object_color.setColorGreen(0);
             winning_object_color.setColorBlue(0);
-        } else {
-            // Cuadro negro
-            winning_object_color.setColorRed(1);
-            winning_object_color.setColorGreen(1);
-            winning_object_color.setColorBlue(1);
         }
     }
 
@@ -193,13 +199,26 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
     // Logica para producir la refraccion
     if (winning_object_color.getColorRefraction() > 0 && winning_object_color.getColorRefraction() <= 1) {
         double refractionIndex = 1.5;
-        double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
-        double k = 1 - refractionIndex * refractionIndex * (1 - dot1 * dot1);
+        double cosi = std::clamp(-1.0, 1.0, intersection_position.dotProduct(winning_object_normal));
+        double etai = 1;
+        double etat = refractionIndex;
+
+        Vector3D n = winning_object_normal;
+
+        if (cosi < 0) {
+            cosi = -cosi;
+        } else {
+            std::swap(etai, etat);
+            n = n.negative();
+        }
+
+        double eta = etai / etat;
+        double k = 1 - eta * eta * (1 - cosi * cosi);
+
         if (k >= 0) {
-            Vector3D scalar1 = winning_object_normal.vectMult(refractionIndex * dot1 + sqrt(k));
-            Vector3D scalar2 = intersecting_ray_direction.vectMult(refractionIndex);
-            Vector3D out = scalar2.negative().vectAdd(scalar1);
-            Vector3D refraction_direction = out.normalize();
+            Vector3D factor1 = intersection_position.vectMult(eta);
+            Vector3D factor2 = n.vectMult(eta * cosi - sqrtf64(k));
+            Vector3D refraction_direction = factor1.vectAdd(factor2);
 
             Ray refraction_ray(intersection_position, refraction_direction);
 
@@ -268,7 +287,8 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
 
             // Si no esta en sombra, se combina el color del objeto con el color de la luz
             if (!shadowed) {
-                final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_source->getLightColor()).colorScalar(cosine_angle));
+                double light_intensity = 0.3;
+                final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_source->getLightColor()).colorScalar(cosine_angle * light_intensity));
 
                 // Si el color tiene un valor en special
                 if (winning_object_color.getColorSpecial() > 0 && winning_object_color.getColorSpecial() <= 1) {

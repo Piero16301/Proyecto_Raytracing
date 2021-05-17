@@ -48,7 +48,7 @@ void* render_frame(void* arg) {
         Vector3D cylinder_location(0, 0, 0);
 
         // Posicion de la camara (plano-luz, alto, plano-sombra)
-        Vector3D campos(0, 3, -5);
+        Vector3D campos(0, 4, -5);
 
         // Direccion de la camara
         Vector3D look_at(0,0,0);
@@ -64,12 +64,17 @@ void* render_frame(void* arg) {
         Camera scene_cam(campos, camdir, camright, camdown);
 
         // Colores pre-definidos
-        Color white(1,1,1,0,0);
+        Color white(1,1,1,2,0);
         Color red_shiny(1,0,0,0.1,0.5);
         Color green_shiny(0,1,0,0.3,0);
         Color blue_shiny(0,0,1,0.3,0);
+        Color black_shiny(0,0,0,0.3,0);
         Color tile_floor(1,1,1,2,0);
-        Color yellow_light(1,1,0.4,0,0);
+        Color yellow_light(1,1,0,0,0);
+        Color green_light(0,1,0,0,0);
+        Color green_glass((double)126/255,(double)154/255,(double)129/255,0.3,0.3);
+        Color blue_glass((double)145/255,(double)184/255,(double)219/255,0.3,0);
+        Color orange_glass((double)198/255,(double)151/255,(double)88/255,2,0);
         // Color maroon(0.5, 0.25, 0.25, 0);
         // Color gray(0.5,0.5,0.5,0);
         // Color black(0.0,0.0,0.0,0);
@@ -78,9 +83,9 @@ void* render_frame(void* arg) {
         Vector3D light_position(-7,10,-10);
         Light scene_light1(light_position, white);
 
-        Light scene_light2(sphere1_location, yellow_light);
-        Light scene_light3(sphere2_location, yellow_light);
-        Light scene_light4(sphere3_location, yellow_light);
+        Light scene_light2(sphere1_location, green_light);
+        Light scene_light3(sphere2_location, green_light);
+        Light scene_light4(sphere3_location, green_light);
 
         vector <Source*> light_sources;
         // light_sources.push_back(dynamic_cast<Source*>(&scene_light1));
@@ -90,11 +95,11 @@ void* render_frame(void* arg) {
         light_sources.push_back(dynamic_cast<Source*>(&scene_light4));
 
         // Objetos de la escena
-        Sphere scene_sphere1(sphere1_location, 0.2, yellow_light);
-        Sphere scene_sphere2(sphere2_location, 0.2, yellow_light);
-        Sphere scene_sphere3(sphere3_location, 0.2, yellow_light);
-        Plane scene_plane(Y, -1, tile_floor);
-        Cylinder scene_cylinder(cylinder_location, 2, 2, red_shiny);
+        Sphere scene_sphere1(sphere1_location, 0.1, green_light);
+        Sphere scene_sphere2(sphere2_location, 0.1, green_light);
+        Sphere scene_sphere3(sphere3_location, 0.1, green_light);
+        Plane scene_plane(Y, -1, orange_glass);
+        Cylinder scene_cylinder(cylinder_location, 2, 2, blue_glass);
 
         vector <Object*> scene_objects;
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere1));
