@@ -14,15 +14,15 @@
 using namespace std;
 
 void saveBMP(const char* filename, int w, int h, int dpi, RGBType* data) {
-    FILE* f;
-    int k = w * h;
-    int s = 4 * k;
+    FILE *f;
+    int k = w*h;
+    int s = 4*k;
     int filesize = 54 + s;
 
-    double factor  = 39.375;
+    double factor = 39.375;
     int m = static_cast<int>(factor);
 
-    int ppm = dpi * m;
+    int ppm = dpi*m;
 
     unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0,0,0, 54,0,0,0};
     unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,24,0};
@@ -57,20 +57,23 @@ void saveBMP(const char* filename, int w, int h, int dpi, RGBType* data) {
     bmpinfoheader[31] = (unsigned char)(ppm>>16);
     bmpinfoheader[32] = (unsigned char)(ppm>>24);
 
-    f = fopen(filename, "wb");
+    f = fopen(filename,"wb");
 
-    fwrite(bmpfileheader,1,14,f);
-    fwrite(bmpinfoheader,1,40,f);
+    fwrite(bmpfileheader,sizeof(char),sizeof(bmpfileheader),f);
+    fwrite(bmpinfoheader,sizeof(char),sizeof(bmpinfoheader),f);
 
     for (int i = 0; i < k; i++) {
-        double red = (data[i].r) * 255;
-        double green = (data[i].g) * 255;
-        double blue = (data[i].b) * 255;
+        RGBType rgb = data[i];
 
-        unsigned char color[3] = {(unsigned char)floor(blue), (unsigned char)floor(green), (unsigned char)floor(red)};
+        double red = (data[i].r)*255;
+        double green = (data[i].g)*255;
+        double blue = (data[i].b)*255;
+
+        unsigned char color[3] = {(unsigned char)floor(blue),(unsigned char)floor(green),(unsigned char)floor(red)};
 
         fwrite(color,1,3,f);
     }
+
     fclose(f);
 }
 
@@ -197,7 +200,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
     }
 
     // Logica para producir la refraccion
-    if (winning_object_color.getColorRefraction() > 0 && winning_object_color.getColorRefraction() <= 1) {
+    /*if (winning_object_color.getColorRefraction() > 0 && winning_object_color.getColorRefraction() <= 1) {
         double refractionIndex = 1.5;
         double cosi = std::clamp(-1.0, 1.0, intersection_position.dotProduct(winning_object_normal));
         double etai = 1;
@@ -242,7 +245,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
                 }
             }
         }
-    }
+    }*/
 
     // Logica para producir las sombras
     for (auto light_source : light_sources) {

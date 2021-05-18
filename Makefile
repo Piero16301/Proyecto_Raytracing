@@ -1,12 +1,11 @@
-OBJ = Camera.o Color.o Cylinder.o Light.o Object.o Plane.o RGBType.o Ray.o Source.o Sphere.o Vector3D.o main.o
+OBJ = main.o Vector3D.o Ray.o RGBType.o Camera.o Color.o Light.o Sphere.o Object.o Plane.o Source.o Cylinder.o
 
 Advanced_Raytracer: $(OBJ)
-	g++ $(OBJ) -o Advanced_Raytracer.exe
-	del /f $(OBJ)
-	.\Advanced_Raytracer.exe
+	g++ $(OBJ) -o Advanced_Raytracer -pthread
+	rm $(OBJ)
 
 main.o:
-	g++ -c Camera.cpp Color.cpp Cylinder.cpp Light.cpp Object.cpp Plane.cpp RGBType.cpp Ray.cpp Source.cpp Sphere.cpp Vector3D.cpp main.cpp
+	g++ -c main.cpp Vector3D.cpp Ray.cpp RGBType.cpp Camera.cpp Color.cpp Light.cpp Sphere.cpp Object.cpp Plane.cpp Source.cpp Cylinder.cpp
 
 clean:
-	del /f $(OBJ) Advanced_Raytracer.exe
+	rm $(OBJ) Advanced_Raytracer

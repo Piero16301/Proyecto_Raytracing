@@ -8,13 +8,12 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Cylinder.h"
-#include "CImg.h"
 
 using namespace std;
 
-int FPS = 1;
-int duration = 1;
-int num_threads = 1;
+int FPS = 30;
+int duration = 5;
+int num_threads = 4;
 
 int step = 0;
 
@@ -25,9 +24,9 @@ void* render_frame(void* arg) {
     cout << "Thread " << temp << " renderizando desde el frame " <<  temp * (FPS * duration) / num_threads << " hasta el frame " << (temp + 1) * (FPS * duration) / num_threads << endl;
 
     for (int i = temp * (FPS * duration) / num_threads; i < (temp + 1) * (FPS * duration) / num_threads; i++) {
-        int dpi = 144;
-        int width = 1280;
-        int height = 720;
+        int dpi = 72;
+        int width = 640;
+        int height = 480;
         int n = width * height;
         auto *pixels = new RGBType[n];
 
@@ -42,13 +41,27 @@ void* render_frame(void* arg) {
         // Vector3D X(1, 0, 0);
         Vector3D Y(0, 1, 0);
         // Vector3D Z(0, 0, 1);
-        Vector3D sphere1_location(0, 1, 0);
-        Vector3D sphere2_location(-1, 0, 1);
-        Vector3D sphere3_location(1, 2, -1);
+
+        Vector3D sphere1_location(-1, 2.8, -0.6);
+        Vector3D sphere2_location(1, 2.8, -0.6);
+        Vector3D sphere3_location(0, 2.8, 1.1);
+
+        Vector3D sphere4_location(-1, 1.8, 0.13);
+        Vector3D sphere5_location(0.5, 1.8, -1);
+        Vector3D sphere6_location(0.7, 1.8, 0.9);
+
+        Vector3D sphere7_location(-0.5, 0.8, -1);
+        Vector3D sphere8_location(-0.6, 0.8, 0.8);
+        Vector3D sphere9_location(1, 0.8, 0);
+
         Vector3D cylinder_location(0, 0, 0);
 
         // Posicion de la camara (plano-luz, alto, plano-sombra)
-        Vector3D campos(0, 4, -5);
+        double prop = ((double)(20) / (double)(FPS * duration));
+        double x_pos = (double)(-10) + (double)(prop * i);
+        double z_pos = (double)(-5) + (double)(x_pos);
+        // cout << "x_pos: " << x_pos << " z_pos: " << z_pos << " prop: " << prop << endl;
+        Vector3D campos(x_pos, 7, z_pos);
 
         // Direccion de la camara
         Vector3D look_at(0,0,0);
@@ -73,7 +86,7 @@ void* render_frame(void* arg) {
         Color yellow_light(1,1,0,0,0);
         Color green_light(0,1,0,0,0);
         Color green_glass((double)126/255,(double)154/255,(double)129/255,0.3,0.3);
-        Color blue_glass((double)145/255,(double)184/255,(double)219/255,0.3,0);
+        Color blue_glass((double)35/255,(double)172/255,(double)196/255,0.3,0);
         Color orange_glass((double)198/255,(double)151/255,(double)88/255,2,0);
         // Color maroon(0.5, 0.25, 0.25, 0);
         // Color gray(0.5,0.5,0.5,0);
@@ -81,11 +94,17 @@ void* render_frame(void* arg) {
 
         // Luces de la escena (solo 1)
         Vector3D light_position(-7,10,-10);
-        Light scene_light1(light_position, white);
+        // Light scene_light1(light_position, white);
 
-        Light scene_light2(sphere1_location, green_light);
-        Light scene_light3(sphere2_location, green_light);
-        Light scene_light4(sphere3_location, green_light);
+        Light scene_light1(sphere1_location, green_light);
+        Light scene_light2(sphere2_location, green_light);
+        Light scene_light3(sphere3_location, green_light);
+        Light scene_light4(sphere4_location, green_light);
+        Light scene_light5(sphere5_location, green_light);
+        Light scene_light6(sphere6_location, green_light);
+        Light scene_light7(sphere7_location, green_light);
+        Light scene_light8(sphere8_location, green_light);
+        Light scene_light9(sphere9_location, green_light);
 
         vector <Source*> light_sources;
         // light_sources.push_back(dynamic_cast<Source*>(&scene_light1));
@@ -98,13 +117,27 @@ void* render_frame(void* arg) {
         Sphere scene_sphere1(sphere1_location, 0.1, green_light);
         Sphere scene_sphere2(sphere2_location, 0.1, green_light);
         Sphere scene_sphere3(sphere3_location, 0.1, green_light);
+        Sphere scene_sphere4(sphere4_location, 0.1, green_light);
+        Sphere scene_sphere5(sphere5_location, 0.1, green_light);
+        Sphere scene_sphere6(sphere6_location, 0.1, green_light);
+        Sphere scene_sphere7(sphere7_location, 0.1, green_light);
+        Sphere scene_sphere8(sphere8_location, 0.1, green_light);
+        Sphere scene_sphere9(sphere9_location, 0.1, green_light);
+
         Plane scene_plane(Y, -1, orange_glass);
-        Cylinder scene_cylinder(cylinder_location, 2, 2, blue_glass);
+        Cylinder scene_cylinder(cylinder_location, 2, 3, blue_glass);
 
         vector <Object*> scene_objects;
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere1));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere2));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere3));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere4));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere5));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere6));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere7));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere8));
+        scene_objects.push_back(dynamic_cast <Object*> (&scene_sphere9));
+
         scene_objects.push_back(dynamic_cast <Object*> (&scene_plane));
         scene_objects.push_back(dynamic_cast <Object*> (&scene_cylinder));
 
@@ -238,7 +271,7 @@ void* render_frame(void* arg) {
             }
         }
 
-        string frame_route = "../images_output/scene_frame_" + to_string(i + 1) + ".bmp";
+        string frame_route = "images_output/scene_frame_" + to_string(i + 1) + ".bmp";
         saveBMP(frame_route.c_str(), width, height, dpi, pixels);
 
         delete [] pixels;
@@ -254,8 +287,8 @@ int main() {
 
     auto t1 = chrono::high_resolution_clock::now();
 
-    system("rm ../images_output/*.bmp");
-    system("rm ../video_output/video.mp4");
+    system("rm images_output/*.bmp");
+    system("rm video_output/video.mp4");
 
     pthread_t threads[num_threads];
 
@@ -268,11 +301,7 @@ int main() {
         pthread_join(threads[i], nullptr);
     }
 
-    // cimg_library::CImg <unsigned char> image;
-    // image.load("../images_output/scene_frame_1.bmp");
-    // image.display();
-
-    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i ../images_output/scene_frame_%d.bmp ../video_output/video.mp4";
+    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i images_output/scene_frame_%d.bmp video_output/video.mp4";
     system(ffmpeg.c_str());
 
     auto t2 = chrono::high_resolution_clock::now();
