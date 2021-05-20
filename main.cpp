@@ -2,6 +2,7 @@
 #include <vector>
 #include <chrono>
 #include <pthread.h>
+#include <iomanip>
 
 #include "Utils.h"
 #include "Camera.h"
@@ -12,10 +13,14 @@
 using namespace std;
 
 int FPS = 30;
-int duration = 5;
-int num_threads = 4;
+int duration = 20;
+int num_threads = 32;
 
 int step = 0;
+
+double light_move[20] = {0, 0.05, 0.1, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.05};
+
+int frames_created = 0;
 
 void* render_frame(void* arg) {
 
@@ -24,9 +29,9 @@ void* render_frame(void* arg) {
     cout << "Thread " << temp << " renderizando desde el frame " <<  temp * (FPS * duration) / num_threads << " hasta el frame " << (temp + 1) * (FPS * duration) / num_threads << endl;
 
     for (int i = temp * (FPS * duration) / num_threads; i < (temp + 1) * (FPS * duration) / num_threads; i++) {
-        int dpi = 72;
-        int width = 640;
-        int height = 480;
+        int dpi = 150;
+        int width = 1366;
+        int height = 768;
         int n = width * height;
         auto *pixels = new RGBType[n];
 
@@ -42,17 +47,20 @@ void* render_frame(void* arg) {
         Vector3D Y(0, 1, 0);
         // Vector3D Z(0, 0, 1);
 
-        Vector3D sphere1_location(-1, 2.8, -0.6);
-        Vector3D sphere2_location(1, 2.8, -0.6);
-        Vector3D sphere3_location(0, 2.8, 1.1);
+	// Moverse en eje X
+        Vector3D sphere1_location(-1 + (light_move[i % 20]), 2.8, -0.6);
+        Vector3D sphere2_location(1 + (light_move[i % 20]), 2.8, -0.6);
+        Vector3D sphere3_location(0 + (light_move[i % 20]), 2.8, 1.1);
 
-        Vector3D sphere4_location(-1, 1.8, 0.13);
-        Vector3D sphere5_location(0.5, 1.8, -1);
-        Vector3D sphere6_location(0.7, 1.8, 0.9);
+	// Moverse en eje Y
+        Vector3D sphere4_location(-1, 1.8 + (light_move[i % 20]), 0.13);
+        Vector3D sphere5_location(0.5, 1.8 + (light_move[i % 20]), -1);
+        Vector3D sphere6_location(0.7, 1.8 + (light_move[i % 20]), 0.9);
 
-        Vector3D sphere7_location(-0.5, 0.8, -1);
-        Vector3D sphere8_location(-0.6, 0.8, 0.8);
-        Vector3D sphere9_location(1, 0.8, 0);
+	// Moverse en eje Z
+        Vector3D sphere7_location(-0.5, 0.8, -1 + (light_move[i % 20]));
+        Vector3D sphere8_location(-0.6, 0.8, 0.8 + (light_move[i % 20]));
+        Vector3D sphere9_location(1, 0.8, 0 + (light_move[i % 20]));
 
         Vector3D cylinder_location(0, 0, 0);
 
@@ -124,7 +132,7 @@ void* render_frame(void* arg) {
         Sphere scene_sphere8(sphere8_location, 0.1, green_light);
         Sphere scene_sphere9(sphere9_location, 0.1, green_light);
 
-        Plane scene_plane(Y, -1, orange_glass);
+        Plane scene_plane(Y, 0, orange_glass);
         Cylinder scene_cylinder(cylinder_location, 2, 3, blue_glass);
 
         vector <Object*> scene_objects;
@@ -271,12 +279,14 @@ void* render_frame(void* arg) {
             }
         }
 
-        string frame_route = "images_output/scene_frame_" + to_string(i + 1) + ".bmp";
+        string frame_route = "/home/piero.morales/CG/Proyecto_Raytracing/images_output/scene_frame_" + to_string(i + 1) + ".bmp";
         saveBMP(frame_route.c_str(), width, height, dpi, pixels);
 
         delete [] pixels;
 
-        cout << "Frame " << i + 1 << " creado" << endl;
+	frames_created++;
+
+        cout << "Frame \t" << i + 1 << "\t creado\t|\t" << std::fixed << std::setprecision(3) << ((double)(frames_created * 100) / (double)(FPS * duration)) << "% completado" << endl;
     }
 
     return (void*) 1;
@@ -287,8 +297,8 @@ int main() {
 
     auto t1 = chrono::high_resolution_clock::now();
 
-    system("rm images_output/*.bmp");
-    system("rm video_output/video.mp4");
+    system("rm /home/piero.morales/CG/Proyecto_Raytracing/images_output/*.bmp");
+    system("rm /home/piero.morales/CG/Proyecto_Raytracing/video_output/video.mp4");
 
     pthread_t threads[num_threads];
 
@@ -301,7 +311,7 @@ int main() {
         pthread_join(threads[i], nullptr);
     }
 
-    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i images_output/scene_frame_%d.bmp video_output/video.mp4";
+    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i /home/piero.morales/CG/Proyecto_Raytracing/images_output/scene_frame_%d.bmp /home/piero.morales/CG/Proyecto_Raytracing/video_output/video.mp4";
     system(ffmpeg.c_str());
 
     auto t2 = chrono::high_resolution_clock::now();
