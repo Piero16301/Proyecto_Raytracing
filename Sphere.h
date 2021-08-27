@@ -12,7 +12,6 @@ public:
     Vector3D center;
     double radius;
     Color color;
-    int type = 1;
 
 public:
     Sphere();
@@ -24,7 +23,6 @@ public:
 
     Vector3D getNormalAt(Vector3D point) override;
     double findIntersection(Ray ray) override;
-    int getType() override;
 };
 
 #endif //ADVANCED_RAYTRACER_SPHERE_H

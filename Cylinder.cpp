@@ -6,7 +6,7 @@ Cylinder::Cylinder() {
     center = Vector3D(0,0,0);
     radius = 1.0;
     height = 1.0;
-    color = Color(0.5,0.5,0.5,0,0);
+    color = Color(0.5,0.5,0.5,0);
 }
 
 Cylinder::Cylinder(Vector3D centerValue, double radiusValue, double heightValue, Color colorValue) {
@@ -58,9 +58,6 @@ double Cylinder::findIntersection(Ray ray) {
     double r = ray.origin.getVectY() + tValue * ray.direction.getVectY();
     
     if ((r >= center.getVectY()) && (r <= center.getVectY() + height)) {
-        if (tValue < 0) {
-            return -1;
-        }
         return tValue;
     } else {
         tValue = (tValue == t1) ? t2 : t1;
@@ -69,15 +66,8 @@ double Cylinder::findIntersection(Ray ray) {
     r = ray.origin.getVectY() + tValue * ray.direction.getVectY();
     
     if ((r >= center.getVectY()) && (r <= center.getVectY() + height)) {
-        if (tValue < 0) {
-            return -1;
-        }
         return tValue;
     } else {
         return -1;
     }
-}
-
-int Cylinder::getType() {
-    return type;
 }

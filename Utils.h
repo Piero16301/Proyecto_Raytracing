@@ -3,7 +3,6 @@
 
 #include <cmath>
 #include <vector>
-#include <algorithm>
 
 #include "RGBType.h"
 #include "Color.h"
@@ -14,15 +13,15 @@
 using namespace std;
 
 void saveBMP(const char* filename, int w, int h, int dpi, RGBType* data) {
-    FILE *f;
-    int k = w*h;
-    int s = 4*k;
+    FILE* f;
+    int k = w * h;
+    int s = 4 * k;
     int filesize = 54 + s;
 
-    double factor = 39.375;
+    double factor  = 39.375;
     int m = static_cast<int>(factor);
 
-    int ppm = dpi*m;
+    int ppm = dpi * m;
 
     unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0,0,0, 54,0,0,0};
     unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,24,0};
@@ -57,23 +56,20 @@ void saveBMP(const char* filename, int w, int h, int dpi, RGBType* data) {
     bmpinfoheader[31] = (unsigned char)(ppm>>16);
     bmpinfoheader[32] = (unsigned char)(ppm>>24);
 
-    f = fopen(filename,"wb");
+    f = fopen(filename, "wb");
 
-    fwrite(bmpfileheader,sizeof(char),sizeof(bmpfileheader),f);
-    fwrite(bmpinfoheader,sizeof(char),sizeof(bmpinfoheader),f);
+    fwrite(bmpfileheader,1,14,f);
+    fwrite(bmpinfoheader,1,40,f);
 
     for (int i = 0; i < k; i++) {
-        RGBType rgb = data[i];
+        double red = (data[i].r) * 255;
+        double green = (data[i].g) * 255;
+        double blue = (data[i].b) * 255;
 
-        double red = (data[i].r)*255;
-        double green = (data[i].g)*255;
-        double blue = (data[i].b)*255;
-
-        unsigned char color[3] = {(unsigned char)floor(blue),(unsigned char)floor(green),(unsigned char)floor(red)};
+        unsigned char color[3] = {(unsigned char)floor(blue), (unsigned char)floor(green), (unsigned char)floor(red)};
 
         fwrite(color,1,3,f);
     }
-
     fclose(f);
 }
 
@@ -132,33 +128,21 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         // Patron de plano a cuadros
         int square = (int) floor(intersection_position.getVectX()) + (int) floor(intersection_position.getVectZ());
         if ((square % 2) == 0) {
-            // Cuadro blanco
-            /*winning_object_color.setColorRed(winning_object_color.colorScalar(0.8).getColorRed());
-            winning_object_color.setColorGreen(winning_object_color.colorScalar(0.8).getColorGreen());
-            winning_object_color.setColorBlue(winning_object_color.colorScalar(0.8).getColorBlue());*/
-            winning_object_color.setColorRed(winning_object_color.getColorRed());
-            winning_object_color.setColorGreen(winning_object_color.getColorGreen());
-            winning_object_color.setColorBlue(winning_object_color.getColorBlue());
-        } else {
             // Cuadro negro
-            /*winning_object_color.setColorRed(winning_object_color.colorScalar(1.2).getColorRed());
-            winning_object_color.setColorGreen(winning_object_color.colorScalar(1.2).getColorGreen());
-            winning_object_color.setColorBlue(winning_object_color.colorScalar(1.2).getColorBlue());*/
             winning_object_color.setColorRed(0);
             winning_object_color.setColorGreen(0);
             winning_object_color.setColorBlue(0);
+        } else {
+            // Cuadro negro
+            winning_object_color.setColorRed(1);
+            winning_object_color.setColorGreen(1);
+            winning_object_color.setColorBlue(1);
         }
-    }
-
-    // Si el objeto es tipo luz, se retorna el color del objeto para que no produzca sombra
-    if (scene_objects.at(index_of_winning_object)->getType() == 1) {
-        return winning_object_color;
     }
 
     // Color final multiplicado por la luz ambiente
     Color final_color = winning_object_color.colorScalar(ambientLight);
 
-    // Logica para producir los reflejos
     if (winning_object_color.getColorSpecial() > 0 && winning_object_color.getColorSpecial() <= 1) {
         // Reflexion de objetos que tienen reflexion especular
         double dot1 = winning_object_normal.dotProduct(intersecting_ray_direction.negative());
@@ -199,55 +183,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
         }
     }
 
-    // Logica para producir la refraccion
-    /*if (winning_object_color.getColorRefraction() > 0 && winning_object_color.getColorRefraction() <= 1) {
-        double refractionIndex = 1.5;
-        double cosi = std::clamp(-1.0, 1.0, intersection_position.dotProduct(winning_object_normal));
-        double etai = 1;
-        double etat = refractionIndex;
-
-        Vector3D n = winning_object_normal;
-
-        if (cosi < 0) {
-            cosi = -cosi;
-        } else {
-            std::swap(etai, etat);
-            n = n.negative();
-        }
-
-        double eta = etai / etat;
-        double k = 1 - eta * eta * (1 - cosi * cosi);
-
-        if (k >= 0) {
-            Vector3D factor1 = intersection_position.vectMult(eta);
-            Vector3D factor2 = n.vectMult(eta * cosi - sqrtf64(k));
-            Vector3D refraction_direction = factor1.vectAdd(factor2);
-
-            Ray refraction_ray(intersection_position, refraction_direction);
-
-            vector <double> refraction_intersections;
-            refraction_intersections.reserve(scene_objects.size());
-
-            for (auto scene_object : scene_objects) {
-                refraction_intersections.push_back(scene_object->findIntersection(refraction_ray));
-            }
-
-            int index_of_winning_object_with_refraction = winningObjectIndex(refraction_intersections);
-
-            if (index_of_winning_object_with_refraction != -1) {
-                if (refraction_intersections.at(index_of_winning_object_with_refraction) > accuracy) {
-                    Vector3D refraction_intersection_position = intersection_position.vectAdd(refraction_direction.vectMult(refraction_intersections.at(index_of_winning_object_with_refraction)));
-                    Vector3D refraction_intersection_ray_direction = refraction_direction;
-
-                    Color refraction_intersection_color = getColorAt(refraction_intersection_position, refraction_intersection_ray_direction, scene_objects, index_of_winning_object_with_refraction, light_sources, accuracy, ambientLight);
-
-                    final_color = final_color.colorAdd(refraction_intersection_color.colorScalar(winning_object_color.getColorRefraction()));
-                }
-            }
-        }
-    }*/
-
-    // Logica para producir las sombras
+    // Se recorren todos las fuentes de luz
     for (auto light_source : light_sources) {
         Vector3D light_direction = light_source->getLightPosition().vectAdd(intersection_position.negative()).normalize();
 
@@ -268,21 +204,16 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
             vector <double> secondary_intersections;
             secondary_intersections.reserve(scene_objects.size());
 
-            vector <int> objects_types;
-            objects_types.reserve(scene_objects.size());
-
             // Se calculan las intersecciones del rayo secundario
             for (auto scene_object : scene_objects) {
                 secondary_intersections.push_back(scene_object->findIntersection(shadow_ray));
-                objects_types.push_back(scene_object->getType());
             }
 
             // Se recorren las intersecciones secundarias
-            for (int i = 0; i < secondary_intersections.size(); i++) {
-                if (secondary_intersections[i] > accuracy) {
+            for (double secondary_intersection : secondary_intersections) {
+                if (secondary_intersection > accuracy) {
                     // Si la interseccion es menor o igual a la distancia a la luz, entonces esta en sombra
-                    distance_to_light_magnitude = (objects_types[i] == 2) ? distance_to_light_magnitude * 3 : distance_to_light_magnitude;
-                    if (secondary_intersections[i] <= distance_to_light_magnitude * 1) {
+                    if (secondary_intersection <= distance_to_light_magnitude) {
                         shadowed = true;
                     }
                 }
@@ -290,8 +221,7 @@ Color getColorAt(Vector3D intersection_position, Vector3D intersecting_ray_direc
 
             // Si no esta en sombra, se combina el color del objeto con el color de la luz
             if (!shadowed) {
-                double light_intensity = 0.3;
-                final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_source->getLightColor()).colorScalar(cosine_angle * light_intensity));
+                final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_source->getLightColor()).colorScalar(cosine_angle));
 
                 // Si el color tiene un valor en special
                 if (winning_object_color.getColorSpecial() > 0 && winning_object_color.getColorSpecial() <= 1) {

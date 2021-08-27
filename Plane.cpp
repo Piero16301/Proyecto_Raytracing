@@ -3,7 +3,7 @@
 Plane::Plane() {
     normal = Vector3D(1,0,0);
     distance = 0;
-    color = Color(0.5,0.5,0.5,0,0);
+    color = Color(0.5,0.5,0.5,0);
 }
 
 Plane::Plane(Vector3D normalValue, double distanceValue, Color colorValue) {
@@ -40,8 +40,4 @@ double Plane::findIntersection(Ray ray) {
         double b = normal.dotProduct(ray.getRayOrigin().vectAdd(normal.vectMult(distance).negative()));
         return -1 * b / a;
     }
-}
-
-int Plane::getType() {
-    return type;
 }

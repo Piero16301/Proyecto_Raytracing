@@ -9,3 +9,4 @@ main.o:
 
 clean:
 	rm $(OBJ) Advanced_Raytracer
+

@@ -10,7 +10,6 @@ public:
     Vector3D normal;
     double distance;
     Color color;
-    int type = 0;
 
 public:
     Plane();
@@ -22,7 +21,6 @@ public:
 
     Vector3D getNormalAt(Vector3D point) override;
     double findIntersection(Ray ray) override;
-    int getType() override;
 };
 
 #endif //ADVANCED_RAYTRACER_PLANE_H
