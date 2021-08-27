@@ -216,7 +216,7 @@ void* render_frame(void* arg) {
             }
         }
 
-        string frame_route = "../images_output/scene_frame_" + to_string(i + 1) + ".bmp";
+        string frame_route = "../images_output/scene_frame_" + to_string(i + 1) + ".bmp";   // Cambiar ruta
         saveBMP(frame_route.c_str(), width, height, dpi, pixels);
 
         delete [] pixels;
@@ -236,8 +236,8 @@ int main() {
 
     auto t1 = chrono::high_resolution_clock::now();
 
-    system("rm ../images_output/*.bmp");
-    system("rm ../video_output/video.mp4");
+    system("rm ../images_output/*.bmp");        // Cambiar ruta
+    system("rm ../video_output/video.mp4");     // Cambiar ruta
 
     pthread_t threads[num_threads];
 
@@ -250,7 +250,7 @@ int main() {
         pthread_join(threads[i], nullptr);
     }
 
-    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i ../images_output/scene_frame_%d.bmp ../video_output/video.mp4";
+    string ffmpeg = "ffmpeg -f image2 -framerate " + to_string(FPS) + " -i ../images_output/scene_frame_%d.bmp ../video_output/video.mp4";  // Cambiar ruta
     system(ffmpeg.c_str());
 
     auto t2 = chrono::high_resolution_clock::now();
