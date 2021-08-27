@@ -225,7 +225,7 @@ void* render_frame(void* arg) {
 
         float porcentaje = (float)(contador_frames * 100) / (float)(FPS * duration);
 
-        printf("Frame %d \tcreado \t->\t %.2f%% completado\n", i + 1, porcentaje);
+        printf("Frame %d \tcreado por el thread %d \t->\t %.2f%% completado\n", i + 1, temp, porcentaje);
     }
 
     return (void*) 1;
