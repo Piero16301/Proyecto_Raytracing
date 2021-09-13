@@ -1,5 +1,5 @@
 # Proyecto Raytracing
-Proyecto 1 de Computación Gráfica
+Proyecto de Raytracing con reflexión y refracción de modelos primitivos.
 
 ## Demo
 
